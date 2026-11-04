@@ -1,0 +1,42 @@
+
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: 'Terraform Build'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Terraform Artifact'
+    steps:
+
+    - checkout: self
+
+    - script: |
+        echo "Preparing Terraform build artifact"
+        find . -type f
+      displayName: 'List Terraform Files'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Terraform Files'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: |
+          **/*.tf
+          **/*.tfvars
+          **/*.yml
+          **/*.yaml
+          **/*.json
+          **/*.md
+          **/.gitignore
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Build Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'Terraform-Build'
+        publishLocation: 'Container'
